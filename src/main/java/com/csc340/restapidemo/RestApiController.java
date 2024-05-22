@@ -75,6 +75,17 @@ public class RestApiController {
         return studentDatabase.values();
     }
 
+    @PutMapping("students/update/{id}")
+    public Object updatestudent(@RequestBody int id, @RequestBody Student student) {
+        if (studentDatabase.containsKey(id)) {
+            studentDatabase.put(id, student);
+            return studentDatabase.values();
+        } else {
+            return "Student with ID " + id + " not found.";
+
+        }
+
+    }
     /**
      * Delete a Student by id
      *
@@ -149,5 +160,31 @@ public class RestApiController {
             return "error in /univ";
         }
 
+    }
+    /**
+     * Get a Stoicism quote from the Stoicism API and make it available at our own API endpoint.
+     *
+     * @return The quote JSON response.
+     */
+    @GetMapping("/stocismQuote")
+    public Object getstocismQuote() {
+        try {
+            String url = "https://stoic.tekloon.net/stoic-quote";
+            RestTemplate restTemplate = new RestTemplate();
+            ObjectMapper mapper = new ObjectMapper();
+
+            String jsonQuote = restTemplate.getForObject(url, String.class);
+            JsonNode root = mapper.readTree(jsonQuote);
+
+            String quoteAuthor = root.get("author").asText();
+            String quoteContent = root.get("text").asText();
+            System.out.println("Author: " + quoteAuthor);
+            System.out.println("Quote: " + quoteContent);
+
+            return root;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(RestApiController.class.getName()).log(Level.SEVERE, null, ex);
+            return "error in /stoicismQuote";
+        }
     }
 }
